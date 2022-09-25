@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 scad = "1.2"
+nalgebra = "^0.16.8"
