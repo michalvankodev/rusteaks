@@ -51,7 +51,6 @@ fn table_attachment(table_height: f32) -> ScadObject {
         table_cut_out
     })});
 
-    // TODO Puzzle insert doesn't go on the `table_attachment`
     let plug = scad!(Translate(vec3(x, 0., 0.)); {
         puzzle_plug(y_z_size, y_z_size)
     });
@@ -67,6 +66,7 @@ fn table_attachment(table_height: f32) -> ScadObject {
 // TODO: Cover up the attachment insert so it looks like a continual piece
 fn puzzle_insert(y: f32, attachment_height: f32) -> ScadObject {
     let x = 10.;
+    let cover_up_height = 1.;
 
     let stand = scad!(Cube(vec3(x, y, attachment_height)));
 
@@ -76,9 +76,14 @@ fn puzzle_insert(y: f32, attachment_height: f32) -> ScadObject {
         })
     });
 
+    let cover_up = scad!(Translate(vec3(-x, 0., attachment_height - cover_up_height)); {
+        scad!(Cube(vec3(2. * x, y, cover_up_height)))
+    });
+
     let union = scad!(Union; {
         stand,
-        triangle_cut_out
+        triangle_cut_out,
+        cover_up,
     });
 
     let insert = scad!(Translate(vec3(x, y, 0.)); {
@@ -91,16 +96,21 @@ fn puzzle_insert(y: f32, attachment_height: f32) -> ScadObject {
 
 fn puzzle_plug(y: f32, attachment_height: f32) -> ScadObject {
     let x = 10.;
+    let cover_up_height = 1.;
     let stand = scad!(Cube(vec3(x, y, attachment_height)));
-    let triangle_cut_out = scad!(Translate(vec3(x, 0., attachment_height + 0.003)); {
+    let triangle_cut_out = scad!(Translate(vec3(x, 0., attachment_height)); {
         scad!(Rotate(180., vec3(0. , 1., 0.)); {
             triangle_union(x, y, attachment_height * 3. / 5.)
         })
     });
+    let cover_down = scad!(Translate(vec3(-x, 0., attachment_height - cover_up_height)); {
+        scad!(Cube(vec3(2. * x, y, cover_up_height)))
+    });
 
     let union = scad!(Difference; {
         stand,
-        triangle_cut_out
+        prepare_for_diff(triangle_cut_out),
+        prepare_for_diff(cover_down)
     });
     return union;
 }
@@ -122,8 +132,7 @@ fn triangle_union(x: f32, y: f32, z: f32) -> ScadObject {
         z,
     );
 
-    // TODO Make difference to cut out the triangles
-    let union = scad!(Union; { // Difference
+    let union = scad!(Union; {
         bigger_triangle,
         smaller_triangle,
     });
@@ -156,6 +165,6 @@ fn prepare_for_diff(obj: ScadObject) -> ScadObject {
     return scad!(Translate(vec3(-0.01, -0.01, -0.01)); {
         scad!(Scale(vec3(1.01, 1.01, 1.01)); {
             obj
-    })
-     });
+        })
+    });
 }
