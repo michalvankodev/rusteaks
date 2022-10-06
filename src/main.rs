@@ -52,26 +52,29 @@ fn table_attachment(table_height: f32) -> ScadObject {
     })});
 
     // TODO Puzzle insert doesn't go on the `table_attachment`
-    let insert = scad!(Translate(vec3(x, 0., 0.)); {
-        puzzle_insert(y_z_size, y_z_size)
+    let plug = scad!(Translate(vec3(x, 0., 0.)); {
+        puzzle_plug(y_z_size, y_z_size)
     });
 
     let result = scad!(Union; {
-            table_part,
-            insert
+        table_part,
+        plug
     });
 
     return result;
 }
 
+// TODO: Cover up the attachment insert so it looks like a continual piece
 fn puzzle_insert(y: f32, attachment_height: f32) -> ScadObject {
     let x = 10.;
 
     let stand = scad!(Cube(vec3(x, y, attachment_height)));
 
     let triangle_cut_out = scad!(Translate(vec3(0., 0., attachment_height)); {
-
-    scad!(Rotate(180., vec3(0. , 1., 0.)); { triangle_union(x, y, attachment_height * 3. / 5.)})});
+        scad!(Rotate(180., vec3(0. , 1., 0.)); {
+            triangle_union(x, y, attachment_height * 3. / 5.)
+        })
+    });
 
     let union = scad!(Union; {
         stand,
@@ -79,10 +82,27 @@ fn puzzle_insert(y: f32, attachment_height: f32) -> ScadObject {
     });
 
     let insert = scad!(Translate(vec3(x, y, 0.)); {
-    scad!(Rotate(180., vec3(0., 0., 1.)); {
-        union
-    })});
+        scad!(Rotate(180., vec3(0., 0., 1.)); {
+            union
+        })
+    });
     return insert;
+}
+
+fn puzzle_plug(y: f32, attachment_height: f32) -> ScadObject {
+    let x = 10.;
+    let stand = scad!(Cube(vec3(x, y, attachment_height)));
+    let triangle_cut_out = scad!(Translate(vec3(x, 0., attachment_height + 0.003)); {
+        scad!(Rotate(180., vec3(0. , 1., 0.)); {
+            triangle_union(x, y, attachment_height * 3. / 5.)
+        })
+    });
+
+    let union = scad!(Difference; {
+        stand,
+        triangle_cut_out
+    });
+    return union;
 }
 
 fn triangle_union(x: f32, y: f32, z: f32) -> ScadObject {
