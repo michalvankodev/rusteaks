@@ -1,24 +1,26 @@
+mod headphone_stand;
 mod table_attachment;
-use scad::*;
 
+use crate::headphone_stand::*;
 use crate::table_attachment::*;
+use scad::*;
 
 fn main() {
     println!("Printing attachment");
 
     let table_height = 10.0; // milimeters
 
-    let mut attachment_piece = table_attachment(table_height);
-    let insert = puzzle_insert(table_height + 0.6, table_height + 0.6);
+    let attachment_piece = table_attachment(table_height);
 
-    // TODO Move this to `table_attachment`
+    // Get rid of the magic `0.6`
+    // It is a `HEIGHT_PADDING * 2 + table_height`
+    //let insert = puzzle_insert(table_height + 0.6, table_height + 0.6);
 
-    let preview = scad!(Translate(vec3(150., 0., 0.) ); {
-        insert
-    });
-    attachment_piece.add_child(preview);
+    create_scad(&"table_attachment.scad".to_owned(), attachment_piece);
 
-    create_scad(&"test1.scad".to_owned(), attachment_piece);
+    let headphone_stand_piece = headphone_stand(35., 50., 35., 9.);
+
+    create_scad("headphone_stand.scad", headphone_stand_piece);
 }
 
 fn create_scad(filename: &str, scad_obj: ScadObject) {
