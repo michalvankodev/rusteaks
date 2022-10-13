@@ -2,7 +2,7 @@ use nalgebra::*;
 use scad::*;
 
 const ATTACHMENT_LENGTH: f32 = 30.;
-const HEIGHT_PADDING: f32 = 3.;
+pub const HEIGHT_PADDING: f32 = 3.;
 const PUZZLE_LENGTH: f32 = 10.;
 const COVER_UP_HEIGHT: f32 = 1.;
 
@@ -21,7 +21,7 @@ pub fn table_attachment(table_height: f32) -> ScadObject {
     })});
 
     let plug = scad!(Translate(vec3(ATTACHMENT_LENGTH, 0., 0.)); {
-        puzzle_plug(y_z_size, y_z_size)
+        puzzle_plug(table_height)
     });
 
     let result = scad!(Union; {
@@ -32,17 +32,19 @@ pub fn table_attachment(table_height: f32) -> ScadObject {
     return result;
 }
 
-pub fn puzzle_insert(y: f32, attachment_height: f32) -> ScadObject {
-    let stand = scad!(Cube(vec3(PUZZLE_LENGTH, y, attachment_height)));
+// THINK: Do you want to send size information in the output aswell?
+pub fn puzzle_insert(table_height: f32) -> ScadObject {
+    let y_z_size = table_height + HEIGHT_PADDING * 2.;
+    let stand = scad!(Cube(vec3(PUZZLE_LENGTH, y_z_size, y_z_size)));
 
-    let triangle_cut_out = scad!(Translate(vec3(0., 0., attachment_height)); {
+    let triangle_cut_out = scad!(Translate(vec3(0., 0., y_z_size)); {
         scad!(Rotate(180., vec3(0. , 1., 0.)); {
-            triangle_union(PUZZLE_LENGTH, y, attachment_height * 3. / 5.)
+            triangle_union(PUZZLE_LENGTH, y_z_size,  y_z_size * 3. / 5.)
         })
     });
 
-    let cover_up = scad!(Translate(vec3(-PUZZLE_LENGTH, 0., attachment_height - COVER_UP_HEIGHT)); {
-        scad!(Cube(vec3(2. * PUZZLE_LENGTH, y, COVER_UP_HEIGHT)))
+    let cover_up = scad!(Translate(vec3(-PUZZLE_LENGTH, 0., y_z_size - COVER_UP_HEIGHT)); {
+        scad!(Cube(vec3(2. * PUZZLE_LENGTH, y_z_size, COVER_UP_HEIGHT)))
     });
 
     let union = scad!(Union; {
@@ -51,7 +53,7 @@ pub fn puzzle_insert(y: f32, attachment_height: f32) -> ScadObject {
         cover_up,
     });
 
-    let insert = scad!(Translate(vec3(PUZZLE_LENGTH, y, 0.)); {
+    let insert = scad!(Translate(vec3(PUZZLE_LENGTH, y_z_size, 0.)); {
         scad!(Rotate(180., vec3(0., 0., 1.)); {
             union
         })
@@ -59,15 +61,16 @@ pub fn puzzle_insert(y: f32, attachment_height: f32) -> ScadObject {
     return insert;
 }
 
-pub fn puzzle_plug(y: f32, attachment_height: f32) -> ScadObject {
-    let stand = scad!(Cube(vec3(PUZZLE_LENGTH, y, attachment_height)));
-    let triangle_cut_out = scad!(Translate(vec3(PUZZLE_LENGTH, 0., attachment_height)); {
+pub fn puzzle_plug(table_height: f32) -> ScadObject {
+    let y_z_size = table_height + HEIGHT_PADDING * 2.;
+    let stand = scad!(Cube(vec3(PUZZLE_LENGTH, y_z_size, y_z_size)));
+    let triangle_cut_out = scad!(Translate(vec3(PUZZLE_LENGTH, 0., y_z_size)); {
         scad!(Rotate(180., vec3(0. , 1., 0.)); {
-            triangle_union(PUZZLE_LENGTH, y, attachment_height * 3. / 5.)
+            triangle_union(PUZZLE_LENGTH, y_z_size, y_z_size * 3. / 5.)
         })
     });
-    let cover_down = scad!(Translate(vec3(-PUZZLE_LENGTH, 0., attachment_height - COVER_UP_HEIGHT)); {
-        scad!(Cube(vec3(2. * PUZZLE_LENGTH, y, COVER_UP_HEIGHT)))
+    let cover_down = scad!(Translate(vec3(-PUZZLE_LENGTH, 0., y_z_size - COVER_UP_HEIGHT)); {
+        scad!(Cube(vec3(2. * PUZZLE_LENGTH, y_z_size, COVER_UP_HEIGHT)))
     });
 
     let union = scad!(Difference; {
@@ -83,14 +86,14 @@ pub fn triangle_union(x: f32, y: f32, z: f32) -> ScadObject {
     let bigger_triangle = triangle(
         vec2(0., y - 0.3 - corner_radius),
         vec2(0., 0.3 + corner_radius),
-        vec2(PUZZLE_LENGTH / 2., y / 2.),
+        vec2(x / 2., y / 2.),
         corner_radius,
         z,
     );
     let smaller_triangle = triangle(
-        vec2(PUZZLE_LENGTH * 3. / 4., y * 1. / 6. + corner_radius),
-        vec2(PUZZLE_LENGTH * 3. / 4., y * 5. / 6. - corner_radius),
-        vec2(PUZZLE_LENGTH / 3., y / 2.),
+        vec2(x * 3. / 4., y * 1. / 6. + corner_radius),
+        vec2(x * 3. / 4., y * 5. / 6. - corner_radius),
+        vec2(x / 3., y / 2.),
         corner_radius,
         z,
     );

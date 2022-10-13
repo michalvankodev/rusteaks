@@ -19,8 +19,19 @@ fn main() {
     create_scad(&"table_attachment.scad".to_owned(), attachment_piece);
 
     let headphone_stand_piece = headphone_stand(35., 50., 35., 9.);
+    let headphone_insert = puzzle_insert(table_height);
 
-    create_scad("headphone_stand.scad", headphone_stand_piece);
+    // TODO Refactor - Perhaps we can return properties from the components so we can use those
+    // instead of passing values around
+    let attachable_headphone_stand = attach_insert_headphones(
+        headphone_stand_piece,
+        headphone_insert,
+        35.,
+        35.,
+        table_height,
+    );
+
+    create_scad("headphone_stand.scad", attachable_headphone_stand);
 }
 
 fn create_scad(filename: &str, scad_obj: ScadObject) {

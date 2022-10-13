@@ -1,9 +1,28 @@
-use crate::table_attachment::prepare_for_diff;
-use nalgebra::*;
+use crate::table_attachment::{prepare_for_diff, HEIGHT_PADDING};
 use scad::*;
 
 const STAND_THICKNESS: f32 = 1.5;
 const BORDER_THICKNESS: f32 = 1.5;
+
+pub fn attach_insert_headphones(
+    headphone_stand: ScadObject,
+    insert: ScadObject,
+    headphone_radius: f32,
+    headphone_width: f32,
+    table_height: f32,
+) -> ScadObject {
+    let insert_y_z = table_height + 2. * HEIGHT_PADDING;
+    let rotated_insert = scad!(Translate(vec3(headphone_radius - STAND_THICKNESS, insert_y_z / 2., headphone_width)); {
+        scad!(Rotate(180., vec3(1., 0., 1.)); {
+            insert
+        })
+    });
+    let result = scad!(Union; {
+        headphone_stand,
+        rotated_insert
+    });
+    return result;
+}
 
 pub fn headphone_stand(width: f32, length: f32, radius: f32, border_height: f32) -> ScadObject {
     let base = scad!(Cylinder(width, Radius(radius)));
@@ -13,7 +32,6 @@ pub fn headphone_stand(width: f32, length: f32, radius: f32, border_height: f32)
         Radius(radius - STAND_THICKNESS)
     ));
 
-    // TODO calculate the length from the center where we should cut out the rest of the
     let distance = distance_from_middle(length, radius);
 
     let cut_rest = scad!(Translate(vec3(- 2. * radius + distance, - radius, 0.)); {
