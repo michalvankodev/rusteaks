@@ -8,17 +8,24 @@ const BORDER_THICKNESS: f32 = 1.5;
 pub fn headphone_stand(width: f32, length: f32, radius: f32, border_height: f32) -> ScadObject {
     let base = scad!(Cylinder(width, Radius(radius)));
 
-    let cut_base = scad!(Cylinder(width, Radius(radius - STAND_THICKNESS)));
+    let cut_base = scad!(Cylinder(
+        width + BORDER_THICKNESS,
+        Radius(radius - STAND_THICKNESS)
+    ));
 
     // TODO calculate the length from the center where we should cut out the rest of the
     let distance = distance_from_middle(length, radius);
 
-    let cut_rest = scad!(Translate(vec3(- 2. * distance, - radius, 0.)); {
-        scad!(Cube(vec3(2. * radius, radius * 2., width)))
+    let cut_rest = scad!(Translate(vec3(- 2. * radius + distance, - radius, 0.)); {
+        scad!(Cube(vec3(2. * radius, radius * 2., width + BORDER_THICKNESS)))
     });
 
-    // TODO border cut out to be simple and pretty
-    let border = scad!(Cylinder(BORDER_THICKNESS, Radius(radius + border_height)));
+    let x_scale = 2. * border_height / length * 2.;
+    let border = scad!(Translate(vec3(distance, 0., 0.)); {
+        scad!(Scale(vec3(x_scale, 1., 1.)); {
+             scad!(Cylinder(BORDER_THICKNESS, Radius(length / 2.)))
+        })
+    });
 
     let top_border = scad!(Translate(vec3(0., 0., width)); {
         border.clone()
