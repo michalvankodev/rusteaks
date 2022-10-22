@@ -3,7 +3,7 @@ use scad::*;
 
 const ATTACHMENT_LENGTH: f32 = 30.;
 pub const HEIGHT_PADDING: f32 = 3.;
-const PUZZLE_LENGTH: f32 = 10.;
+pub const PUZZLE_LENGTH: f32 = 10.;
 const COVER_UP_HEIGHT: f32 = 1.;
 
 pub fn table_attachment(table_height: f32) -> ScadObject {

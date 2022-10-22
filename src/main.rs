@@ -8,7 +8,7 @@ use scad::*;
 fn main() {
     println!("Printing attachment");
 
-    let table_height = 10.0; // milimeters
+    let table_height = 17.0; // milimeters
 
     let attachment_piece = table_attachment(table_height);
 
@@ -18,7 +18,7 @@ fn main() {
 
     create_scad(&"table_attachment.scad".to_owned(), attachment_piece);
 
-    let headphone_stand_piece = headphone_stand(35., 50., 35., 9.);
+    let headphone_stand_piece = headphone_stand(47., 75., 43., 14.);
     let headphone_insert = puzzle_insert(table_height);
 
     // TODO Refactor - Perhaps we can return properties from the components so we can use those
@@ -26,8 +26,8 @@ fn main() {
     let attachable_headphone_stand = attach_insert_headphones(
         headphone_stand_piece,
         headphone_insert,
-        35.,
-        35.,
+        43.,
+        47.,
         table_height,
     );
 

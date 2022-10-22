@@ -1,36 +1,45 @@
-use crate::table_attachment::{prepare_for_diff, HEIGHT_PADDING};
+use crate::table_attachment::{prepare_for_diff, HEIGHT_PADDING, PUZZLE_LENGTH};
 use scad::*;
 
-const STAND_THICKNESS: f32 = 1.5;
-const BORDER_THICKNESS: f32 = 1.5;
+const BORDER_THICKNESS: f32 = 2.8;
 
 pub fn attach_insert_headphones(
-    headphone_stand: ScadObject,
+    headphone_stand: (ScadObject, HeadPhoneStandProps),
     insert: ScadObject,
     headphone_radius: f32,
     headphone_width: f32,
     table_height: f32,
 ) -> ScadObject {
     let insert_y_z = table_height + 2. * HEIGHT_PADDING;
-    let rotated_insert = scad!(Translate(vec3(headphone_radius - STAND_THICKNESS, insert_y_z / 2., headphone_width)); {
+    let rotated_insert = scad!(Translate(vec3(headphone_radius, insert_y_z / 2., headphone_width)); {
         scad!(Rotate(180., vec3(1., 0., 1.)); {
             insert
         })
     });
+    // TODO Refactor and use the calculations
+    // radius - distance
+    let continuiation = scad!(Translate(vec3(headphone_radius - 21.7, - insert_y_z / 2., headphone_width)); {
+        scad!(Cube(vec3(21.7, insert_y_z, PUZZLE_LENGTH)))
+    });
     let result = scad!(Union; {
-        headphone_stand,
-        rotated_insert
+        headphone_stand.0,
+        rotated_insert,
+        continuiation
     });
     return result;
 }
 
-pub fn headphone_stand(width: f32, length: f32, radius: f32, border_height: f32) -> ScadObject {
-    let base = scad!(Cylinder(width, Radius(radius)));
+pub struct HeadPhoneStandProps {
+    pub distance: f32,
+}
 
-    let cut_base = scad!(Cylinder(
-        width + BORDER_THICKNESS,
-        Radius(radius - STAND_THICKNESS)
-    ));
+pub fn headphone_stand(
+    width: f32,
+    length: f32,
+    radius: f32,
+    border_height: f32,
+) -> (ScadObject, HeadPhoneStandProps) {
+    let base = scad!(Cylinder(width, Radius(radius)));
 
     let distance = distance_from_middle(length, radius);
 
@@ -56,10 +65,9 @@ pub fn headphone_stand(width: f32, length: f32, radius: f32, border_height: f32)
     });
     let result = scad!(Difference; {
         base_with_borders,
-        prepare_for_diff(cut_base),
         prepare_for_diff(cut_rest)
     });
-    return result;
+    return (result, HeadPhoneStandProps { distance });
 }
 
 pub fn distance_from_middle(length: f32, radius: f32) -> f32 {
