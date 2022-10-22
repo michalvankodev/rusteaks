@@ -9,26 +9,20 @@ fn main() {
     println!("Printing attachment");
 
     let table_height = 17.0; // milimeters
+    let attachment_width = 25.;
 
-    let attachment_piece = table_attachment(table_height);
+    let (attachment_piece, attachment_props) = table_attachment(table_height, attachment_width);
 
-    // Get rid of the magic `0.6`
-    // It is a `HEIGHT_PADDING * 2 + table_height`
-    //let insert = puzzle_insert(table_height + 0.6, table_height + 0.6);
+    create_scad(
+        &"table_attachment.scad".to_owned(),
+        attachment_piece.clone(),
+    );
 
-    create_scad(&"table_attachment.scad".to_owned(), attachment_piece);
+    let (headphone_stand_piece, stand_props) = headphone_stand(47., 75., 43., 14.);
 
-    let headphone_stand_piece = headphone_stand(47., 75., 43., 14.);
-    let headphone_insert = puzzle_insert(table_height);
-
-    // TODO Refactor - Perhaps we can return properties from the components so we can use those
-    // instead of passing values around
-    let attachable_headphone_stand = attach_insert_headphones(
-        headphone_stand_piece,
-        headphone_insert,
-        43.,
-        47.,
-        table_height,
+    let attachable_headphone_stand = attach_table_attachment_to_headphones(
+        (headphone_stand_piece, stand_props),
+        (attachment_piece.clone(), attachment_props),
     );
 
     create_scad("headphone_stand.scad", attachable_headphone_stand);
