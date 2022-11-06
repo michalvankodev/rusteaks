@@ -2,7 +2,7 @@ use scad::*;
 
 const ATTACHMENT_LENGTH: f32 = 40.;
 const TABLE_CUT_OUT_LENGTH: f32 = 30.;
-pub const HEIGHT_PADDING: f32 = 3.;
+pub const HEIGHT_PADDING: f32 = 5.;
 
 pub struct TableAttachmentProps {
     pub width: f32,

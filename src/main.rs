@@ -1,7 +1,9 @@
 mod headphone_stand;
+mod keyboard;
 mod table_attachment;
 
 use crate::headphone_stand::*;
+use crate::keyboard::switch::{self, switch, switch_row};
 use crate::table_attachment::*;
 use scad::*;
 
@@ -26,6 +28,10 @@ fn main() {
     );
 
     create_scad("headphone_stand.scad", attachable_headphone_stand);
+
+    // KEYBOARD stuff
+    let switch = switch_row(2);
+    create_scad("switch.scad", switch.0)
 }
 
 fn create_scad(filename: &str, scad_obj: ScadObject) {
