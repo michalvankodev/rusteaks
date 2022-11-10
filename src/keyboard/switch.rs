@@ -5,8 +5,11 @@ pub const SWITCH_BORDER: f32 = 0.8 * 2.; // We have multiplied it for the sake o
 pub const CUT_OFF_LENGTH: f32 = 1.;
 pub const CUT_OFF_WIDTH: f32 = 4.;
 pub const CUT_OFF_MARGIN: f32 = 1.41;
-pub const KEY_MARGIN: f32 = 3.;
+pub const KEY_MARGIN: f32 = 1.;
 pub const PLATE_HEIGHT: f32 = 4.;
+
+pub const KEYCAP_WITH_KEY_WIDTH: f32 = 18.0;
+pub const KEYCAP_WITH_KEY_HEIGHT: f32 = 14.0;
 
 pub struct SwitchProps {
     pub width: f32,
@@ -36,38 +39,75 @@ pub fn switch() -> (ScadObject, SwitchProps) {
 
 struct RowInfo {
     index: u8,
-    top_x: f32,
     switch_props: SwitchProps,
+    rotation: f32,
 }
-pub fn switch_row(count: u8) -> (ScadObject, SwitchRowProps) {
+
+pub fn switch_column(count: u8, finger_concave_radius: f32) -> (ScadObject, SwitchRowProps) {
     let seq = 0..count;
     let mut result = scad!(Union);
 
     seq.map(|row| {
         let (switch, props) = switch();
-        // TODO: Add the margin between the keys
+        let rotation = 180. - 2. * get_rotation(finger_concave_radius, finger_concave_radius, KEYCAP_WITH_KEY_WIDTH + KEY_MARGIN).to_degrees();
 
-        let x = f32::from(row) * (props.width + KEY_MARGIN);
-        let repositioned_switch = scad!(Translate(vec3(x, 0., 0.)); { switch });
+        println!("rotation:{}", rotation);
 
-        let top_x = x + props.width;
+
+        // Put switch into middle so it is rotated by center
+        let repositioned_switch = scad!(Translate(vec3(- props.width / 2., 0., -finger_concave_radius - KEYCAP_WITH_KEY_HEIGHT)); { switch });
+
+        let rotation_multi = (f32::from(row) + 0.5) - f32::from(count) / 2. ;
+        let rotated_switch = scad!(Rotate(rotation * rotation_multi, vec3(0., 1., 0.)); { repositioned_switch});
+
         return (
-            repositioned_switch,
+            rotated_switch,
             RowInfo {
                 index: row,
-                top_x,
                 switch_props: props,
+                rotation ,
             },
         );
     })
     .for_each(|(switch, row_info)| {
-        let key_margin = scad!(Translate(vec3(row_info.top_x, 0., 0.)); {
-            scad!(Cube(vec3(KEY_MARGIN, row_info.switch_props.width, PLATE_HEIGHT)))
+        let base = scad!(Polygon(PolygonParameters::new(vec![
+            vec2(0., 0.),
+            vec2(0., PLATE_HEIGHT),
+            // TODO: Calculate these 2 vectors
+            vec2(5., PLATE_HEIGHT + 0.4),
+            vec2(6., 0.4)
+        ])));
+
+        let extruded = scad!(LinearExtrude(LinExtrudeParams {
+            height: row_info.switch_props.width,
+            twist: 0.,
+            center: false,
+            slices: 0,
+            convexity: 1
+        }); { base });
+
+        let rotated = scad!(Rotate(90., vec3(1., 0., 0.)); { extruded });
+
+        // let key_margin = scad!(Translate(vec3(0., 0.,- finger_concave_radius - KEYCAP_WITH_KEY_HEIGHT)); {
+        let moved = scad!(Translate(vec3(0., row_info.switch_props.width, 0.)); {
+            rotated
         });
+        // TODO: Make the switches connected
         result.add_child(switch);
-        if (row_info.index < count - 1) {
-            result.add_child(key_margin);
+        if row_info.index < count - 1 {
+            result.add_child(moved);
         }
     });
     return (result, SwitchRowProps {});
+}
+
+pub fn third_side(side1: f32, side2: f32) -> f32 {
+    let side3pow2 = side1.powi(2) + side2.powi(2);
+    return side3pow2.sqrt();
+}
+
+pub fn get_rotation(a: f32, b: f32, c: f32) -> f32 {
+    let sum = b.powi(2) + c.powi(2) - a.powi(2);
+    let div = sum / (2. * b * c);
+    return div.acos();
 }

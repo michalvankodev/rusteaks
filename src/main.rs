@@ -3,7 +3,7 @@ mod keyboard;
 mod table_attachment;
 
 use crate::headphone_stand::*;
-use crate::keyboard::switch::{self, switch, switch_row};
+use crate::keyboard::switch::{self, switch, switch_column, KEYCAP_WITH_KEY_HEIGHT};
 use crate::table_attachment::*;
 use scad::*;
 
@@ -29,8 +29,9 @@ fn main() {
 
     create_scad("headphone_stand.scad", attachable_headphone_stand);
 
+    let finger_pinky_length: f32 = 60.1;
     // KEYBOARD stuff
-    let switch = switch_row(2);
+    let switch = switch_column(7, finger_pinky_length);
     create_scad("switch.scad", switch.0)
 }
 
