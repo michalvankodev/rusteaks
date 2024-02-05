@@ -11,7 +11,7 @@ fn main() {
     println!("Printing attachment");
 
     let table_height = 17.0; // milimeters
-    let attachment_width = 25.;
+    let attachment_width = 35.;
 
     let (attachment_piece, attachment_props) = table_attachment(table_height, attachment_width);
 
@@ -20,7 +20,7 @@ fn main() {
         attachment_piece.clone(),
     );
 
-    let (headphone_stand_piece, stand_props) = headphone_stand(47., 75., 43., 14.);
+    let (headphone_stand_piece, stand_props) = headphone_stand(47., 55., 40., 12.);
 
     let attachable_headphone_stand = attach_table_attachment_to_headphones(
         (headphone_stand_piece, stand_props),

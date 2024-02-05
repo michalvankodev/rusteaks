@@ -7,7 +7,7 @@ pub fn attach_table_attachment_to_headphones(
     (headphone_stand_piece, stand_props): (ScadObject, HeadPhoneStandProps),
     (attachment, attachment_props): (ScadObject, TableAttachmentProps),
 ) -> ScadObject {
-    let rotated_attachment = scad!(Translate(vec3(stand_props.distance, attachment_props.width / - 2., stand_props.width + attachment_props.length)); {
+    let rotated_attachment = scad!(Translate(vec3(stand_props.distance, attachment_props.width / - 2., stand_props.width + attachment_props.length - BORDER_THICKNESS)); {
         scad!(Rotate(90., vec3(0., 1., 0.)); {
             attachment
         })
